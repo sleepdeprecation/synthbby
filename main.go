@@ -33,22 +33,32 @@ func (g *Game) Update() error {
 		var err error
 		// osc, _ := oscillator.NewOscillator(sampleRate, oscillator.SINE)
 		env := &seq.Envelope{
-			Attack:  0.01,
-			Decay:   0.5,
-			Sustain: 0.0,
-			Release: 0.0,
+			Attack:  1.0,
+			Decay:   2.5,
+			Sustain: 0.75,
+			Release: 0.5,
+		}
+
+		voice := oscillator.NewSimpleVoice(sampleRate)
+		voice.PreAmpFilters = []oscillator.PreAmpFilter{
+			&oscillator.LowPassFilter{Cutoff: 200, SampleRate: sampleRate},
+			// &oscillator.HighPassFilter{Cutoff: 5000},
 		}
 
 		g.player, err = g.audioContext.NewPlayer(&seq.Sequencer{
 			SampleRate: sampleRate,
 			BPM:        480,
-			Voice:      oscillator.NewSimpleVoice(sampleRate),
+			Voice:      voice,
 			Sequence: &seq.Sequence{
 				Notes: []*seq.Note{
-					{Frequency: 220.0, Envelope: env, Duration: 2},
-					{Frequency: 262.0, Envelope: env, Duration: 2},
-					{Frequency: 392.0, Envelope: env, Duration: 2},
-					{Frequency: 330.0, Envelope: env, Duration: 2},
+					// {Frequency: 55.0, Envelope: env, Duration: 8},
+					// {Frequency: 65.0, Envelope: env, Duration: 8},
+					// {Frequency: 98.0, Envelope: env, Duration: 8},
+					// {Frequency: 82.0, Envelope: env, Duration: 8},
+					{Frequency: float64(A3), Envelope: env, Duration: 8},
+					{Frequency: float64(C3), Envelope: env, Duration: 8},
+					{Frequency: float64(G3), Envelope: env, Duration: 8},
+					{Frequency: float64(E3), Envelope: env, Duration: 8},
 				},
 			},
 		})
