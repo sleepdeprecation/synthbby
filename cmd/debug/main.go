@@ -3,17 +3,23 @@ package main
 import (
 	"fmt"
 
-	"github.com/sleepdeprecation/synthbby/sequencer"
+	"github.com/sleepdeprecation/synthbby/synth"
 )
 
 func main() {
-	env := &sequencer.Envelope{
-		Attack:  1.0,
-		Decay:   1.0,
-		Sustain: 0.8,
-		Release: 0.8,
+	env := &synth.Envelope{
+		Attack:  0.5,
+		Decay:   0.1,
+		Sustain: 0.5,
+		Release: 0.1,
 	}
 
-	samples := env.Render(10, 4, 60)
+	samples := env.BuildStep(20, true, true)
+	fmt.Println(samples)
+
+	samples = env.BuildStep(10, true, false)
+	fmt.Println(samples)
+
+	samples = env.BuildStep(10, false, true)
 	fmt.Println(samples)
 }

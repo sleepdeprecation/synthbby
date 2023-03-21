@@ -3,10 +3,9 @@ package oscillator
 type Voice struct {
 	// SampleRate float64
 
-	Source        *Oscillator
-	PreAmpFilters []PreAmpFilter
-	Envelope
-	// Amp            Amplifier
+	Source         *Oscillator
+	PreAmpFilters  []PreAmpFilter
+	Amp            Amplifier
 	PostAmpFilters []PostAmpFilter
 }
 
@@ -64,12 +63,12 @@ func (v *Voice) GetSamples(n int) []int16 {
 // 	return sample
 // }
 
-func (v *Voice) SampleBytes() []byte {
-	sample := v.GetSample()
-	return []byte{
-		byte(sample),
-		byte(sample >> 8),
-		byte(sample),
-		byte(sample >> 8),
-	}
-}
+// func (v *Voice) SampleBytes() []byte {
+// 	sample := v.GetSample()
+// 	return []byte{
+// 		byte(sample),
+// 		byte(sample >> 8),
+// 		byte(sample),
+// 		byte(sample >> 8),
+// 	}
+// }
