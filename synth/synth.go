@@ -1,8 +1,6 @@
 package synth
 
 import (
-	"math"
-
 	"github.com/sleepdeprecation/synthbby/oscillator"
 )
 
@@ -12,9 +10,21 @@ type Synth struct {
 	Oscillator *oscillator.Oscillator
 }
 
-func (s *Synth) BuildStep(numFrames int, pitch float64, gateOpen, gateClose bool) []int16 {
-	ampData := s.Envelope.BuildStep(numFrames, gateOpen, gateClose)
-	stepData := make([]int16, numFrames)
+func New(sampleRate int, wave oscillator.WaveFunction) *Synth {
+	return &Synth{
+		SampleRate: sampleRate,
+		Oscillator: oscillator.New(sampleRate, wave),
+		Envelope: &Envelope{
+			Attack:  0.0,
+			Decay:   0.0,
+			Sustain: 1.0,
+			Release: 0.0,
+		},
+	}
+}
+
+func (s *Synth) BuildStep(numFrames int, pitch float64, gateOff, gateOpen, gateClose bool) []float64 {
+	frames := s.Envelope.BuildStep(numFrames, gateOff, gateOpen, gateClose)
 
 	s.Oscillator.SetFrequency(pitch)
 	if gateOpen {
@@ -22,10 +32,8 @@ func (s *Synth) BuildStep(numFrames int, pitch float64, gateOpen, gateClose bool
 	}
 
 	for i := 0; i < numFrames; i++ {
-		frame := s.Oscillator.Tick()
-		stepData[i] = int16(frame * math.MaxInt16 * ampData[i])
-		// stepData[i] = int16(frame * math.MaxInt16) // * ampData[i])
+		frames[i] = frames[i] * s.Oscillator.Tick()
 	}
 
-	return stepData
+	return frames
 }

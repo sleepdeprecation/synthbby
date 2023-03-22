@@ -10,22 +10,12 @@ type Envelope struct {
 	Sustain float64
 }
 
-var EnvelopeOff = &Envelope{
-	Attack:  0.0,
-	Decay:   0.0,
-	Sustain: 1.0,
-	Release: 0.0,
-}
-
-var EnvelopeZero = &Envelope{
-	Attack:  0.0,
-	Decay:   0.0,
-	Sustain: 0.0,
-	Release: 0.0,
-}
-
-func (e *Envelope) BuildStep(numFrames int, gateOpen, gateClose bool) []float64 {
+func (e *Envelope) BuildStep(numFrames int, gateOff, gateOpen, gateClose bool) []float64 {
 	frames := make([]float64, numFrames)
+
+	if gateOff {
+		return frames
+	}
 
 	attackLength := 0
 	decayStart := 0

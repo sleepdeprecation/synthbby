@@ -5,9 +5,7 @@ import (
 	"time"
 
 	"github.com/hajimehoshi/oto/v2"
-	"github.com/sleepdeprecation/synthbby/oscillator"
 	"github.com/sleepdeprecation/synthbby/sequencer"
-	"github.com/sleepdeprecation/synthbby/synth"
 )
 
 func main() {
@@ -22,67 +20,57 @@ func main() {
 
 	<-readyChan
 
-	stepSeq := sequencer.StepSequencer{
-		SampleRate: sampleRate,
-		ClockRate:  120,
-		Steps: [16]*sequencer.Step{
-			{Pitch: 219.0, Gate: sequencer.GateStart | sequencer.GateEnd},
-			{Pitch: 219.0, Gate: sequencer.GateStart | sequencer.GateEnd},
-			{Pitch: 320.0, Gate: sequencer.GateStart | sequencer.GateEnd},
-			{Pitch: 219.0, Gate: sequencer.GateStart | sequencer.GateEnd},
-
-			{Pitch: 219.0, Gate: sequencer.GateStart | sequencer.GateEnd},
-			{Pitch: 219.0, Gate: sequencer.GateStart | sequencer.GateEnd},
-			{Pitch: 330.0, Gate: sequencer.GateStart},
-			{Pitch: 330.0, Gate: sequencer.GateEnd},
-
-			{Pitch: 219.0, Gate: sequencer.GateStart | sequencer.GateEnd},
-			// {Pitch: 219.0, Gate: sequencer.GateStart | sequencer.GateEnd},
-			{Pitch: 330.0, Gate: sequencer.GateStart},
-			{Pitch: 275.0, Gate: 0},
-			{Pitch: 219.0, Gate: sequencer.GateEnd},
-
-			{Pitch: 219.0, Gate: sequencer.GateStart | sequencer.GateEnd},
-			{Pitch: 219.0, Gate: sequencer.GateStart | sequencer.GateEnd},
-			{Pitch: 330.0, Gate: sequencer.GateStart | sequencer.GateEnd},
-			{Pitch: 219.0, Gate: sequencer.GateStart | sequencer.GateEnd},
-		},
+	dm := sequencer.NewDrumMachine(sampleRate, 120)
+	dm.Snare.SetEnvelope(0.0, 0.15, 0, 0)
+	for _, step := range dm.Snare.Steps() {
+		step.Gate = sequencer.GateDiscrete
 	}
 
-	osc, err := oscillator.NewOscillator(sampleRate, oscillator.Sine)
-	if err != nil {
-		panic(err)
+	dm.Bass.SetEnvelope(0.5, 0, 1, 0.5)
+	for idx, step := range dm.Bass.Steps() {
+		step.Gate = sequencer.GateOpen
+		if idx%2 == 0 {
+			step.Gate |= sequencer.GateStart
+		} else if idx%1 == 1 {
+			step.Gate |= sequencer.GateEnd
+		}
+
+		switch idx / 4 {
+		case 0:
+			step.Pitch = 65
+		case 1:
+			step.Pitch = 82
+		case 2:
+			step.Pitch = 123
+		case 3:
+			step.Pitch = 98
+		}
 	}
 
-	syn := synth.Synth{
-		Envelope: &synth.Envelope{
-			Attack:  0.5,
-			Decay:   0.2,
-			Sustain: 0.2,
-			Release: 0.1,
-		},
-		Oscillator: osc,
+	dm.Lead.SetEnvelope(0.25, 0.125, 0.7, 0.1)
+	for idx, step := range dm.Lead.Steps() {
+		step.Gate = sequencer.GateDiscrete
+		switch idx % 4 {
+		case 0:
+			step.Pitch = 440
+		case 1:
+			step.Pitch = 523
+		case 2:
+			step.Pitch = 784
+		case 3:
+			step.Pitch = 659
+		}
 	}
 
 	tmpBuf := []byte{}
-	stepFrames := stepSeq.SampleRate / (stepSeq.ClockRate / 60)
-	for _, step := range stepSeq.Steps {
-		samples := syn.BuildStep(
-			stepFrames,
-			step.Pitch,
-			step.Gate.IsStart(),
-			step.Gate.IsEnd(),
+	for _, sample := range dm.Render() {
+		tmpBuf = append(
+			tmpBuf,
+			byte(sample),
+			byte(sample>>8),
+			byte(sample),
+			byte(sample>>8),
 		)
-
-		for _, sample := range samples {
-			tmpBuf = append(
-				tmpBuf,
-				byte(sample),
-				byte(sample>>8),
-				byte(sample),
-				byte(sample>>8),
-			)
-		}
 	}
 
 	playBuf := bytes.NewReader(tmpBuf)
