@@ -53,12 +53,16 @@ func main() {
 		switch idx % 4 {
 		case 0:
 			step.Pitch = 440
+			// step.Pitch = 220
 		case 1:
 			step.Pitch = 523
+			// step.Pitch = 262
 		case 2:
 			step.Pitch = 784
+			// step.Pitch = 392
 		case 3:
 			step.Pitch = 659
+			// step.Pitch = 330
 		}
 	}
 

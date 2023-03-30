@@ -7,6 +7,7 @@ import (
 type Instrument struct {
 	Sequencer *StepSequencer
 	Synth     *synth.Synth
+	Filters   []synth.Filter
 
 	framesPerStep int
 }
@@ -38,6 +39,7 @@ func (i *Instrument) Render() []float64 {
 		stepSamples := i.Synth.BuildStep(
 			i.framesPerStep,
 			step.Pitch,
+			i.Filters,
 			step.Gate.IsOff(),
 			step.Gate.IsStart(),
 			step.Gate.IsEnd(),

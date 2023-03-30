@@ -23,7 +23,7 @@ func New(sampleRate int, wave oscillator.WaveFunction) *Synth {
 	}
 }
 
-func (s *Synth) BuildStep(numFrames int, pitch float64, gateOff, gateOpen, gateClose bool) []float64 {
+func (s *Synth) BuildStep(numFrames int, pitch float64, filters []Filter, gateOff, gateOpen, gateClose bool) []float64 {
 	frames := s.Envelope.BuildStep(numFrames, gateOff, gateOpen, gateClose)
 
 	s.Oscillator.SetFrequency(pitch)
@@ -31,8 +31,13 @@ func (s *Synth) BuildStep(numFrames int, pitch float64, gateOff, gateOpen, gateC
 		s.Oscillator.Reset()
 	}
 
+	ticks := s.Oscillator.Ticks(numFrames)
+	for _, filter := range filters {
+		filter(ticks)
+	}
+
 	for i := 0; i < numFrames; i++ {
-		frames[i] = frames[i] * s.Oscillator.Tick()
+		frames[i] = frames[i] * ticks[i]
 	}
 
 	return frames

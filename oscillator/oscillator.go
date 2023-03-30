@@ -54,3 +54,12 @@ func (o *Oscillator) Tick() float64 {
 
 	return tick
 }
+
+func (o *Oscillator) Ticks(n int) []float64 {
+	ticks := make([]float64, n)
+	for idx := range ticks {
+		ticks[idx] = o.Tick()
+	}
+
+	return ticks
+}
